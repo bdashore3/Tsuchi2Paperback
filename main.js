@@ -46,6 +46,11 @@ function main() {
     for (const title of element.titles) {
       const newTitle = title.slice(2, title.length)
       const manga = getManga(newTitle)
+      const casedSource = getCasedSource(element.source)
+
+      if (casedSource === null) {
+        continue
+      }
 
       library.push({
         lastRead: 0,
@@ -61,13 +66,28 @@ function main() {
         id: uuidv4(),
         manga: manga,
         originalInfo: manga,
-        sourceId: element.source,
+        sourceId: casedSource,
       })
     }
   }
 
   const pbBackupString = JSON.stringify(pbBackup, null, 2)
   fs.writeFileSync("./PBBackup-MangaSoup.json", pbBackupString)
+}
+
+function getCasedSource(initialSource) {
+  switch (initialSource.toLowerCase()) {
+    case "manganelo":
+    case "manganato":
+      return "Manganato"
+    case "mangadex":
+      return "MangaDex"
+    case "mangasee":
+    case "mangalife":
+      return "MangaLife"
+    default:
+      return null
+  }
 }
 
 function getManga(title) {
