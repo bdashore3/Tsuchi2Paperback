@@ -1,12 +1,13 @@
-name: Build and package server
+name: Upload binaries
 
 on:
-  push:
-    branches: [default]
+  release:
+    types:
+      - created
 
 jobs:
   build:
-    name: Build and package binary
+    name: Upload migrator package
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -25,17 +26,21 @@ jobs:
           node-version: "14.x"
       - name: Install Dependencies
         run: yarn install
-      - name: Package binary
+      - name: Build and package items
         run: |
           yarn package
-          mv executables/main-linux executables/ms-migrator-linux
-          mv executables/main-macos executables/ms-migrator-macos
-          mv executables/main-win.exe executables/ms-migrator-win.exe
-      - name: Get short sha
-        id: vars
-        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
-      - name: Upload files
-        uses: actions/upload-artifact@v2
+          mv executables/main-linux executables/tsuchi-manual-migrator-linux
+          mv executables/main-macos executables/tsuchi-manual-migrator-macos
+          mv executables/main-win.exe executables/tsuchi-manual-migrator-win.exe
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+      - name: Zip binaries
+        run: zip -j tsuchi-manual-migrator-${{ steps.date.outputs.date }} ./executables/*
+      - name: Upload binaries
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
         with:
-          name: ms-migrator-${{ steps.vars.outputs.sha_short }}
-          path: ./executables
+          files: ./tsuchi-manual-migrator-${{ steps.date.outputs.date }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
