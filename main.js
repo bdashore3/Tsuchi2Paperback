@@ -119,7 +119,9 @@ function getManga(title) {
 function parseTextFile(userText) {
   const parentArray = []
 
-  const splitArray = userText.split("\n")
+  // For CRLF line endings
+  const newText = userText.replace(/\r?/g, "")
+  const splitArray = newText.split("\n")
 
   const filteredArray = splitArray.filter((v) => v !== "")
   const sources = filteredArray.filter((v) => v.slice(v.length - 1) === ":")
